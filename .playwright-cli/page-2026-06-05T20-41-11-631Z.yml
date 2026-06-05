@@ -1,0 +1,72 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - heading "Git 命令行教学网站" [level=1] [ref=e6]
+    - generic [ref=e7]:
+      - button "上一关" [ref=e8] [cursor=pointer]
+      - button "下一关" [ref=e9] [cursor=pointer]
+      - 'button "音效: 开" [ref=e10] [cursor=pointer]'
+  - main [ref=e11]:
+    - generic [ref=e14]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - strong [ref=e23]: 学习 Git 分支
+          - generic [ref=e25]:
+            - generic [ref=e26]:
+              - generic [ref=e27]:
+                - img [ref=e28]
+                - generic [ref=e30]: World 1 - 初始化仓库
+                - emphasis [ref=e31]: SIM
+              - generic [ref=e32]:
+                - button "隐藏目标" [ref=e33] [cursor=pointer]
+                - button "提示" [ref=e34] [cursor=pointer]
+            - paragraph [ref=e35]: 从 git init 开始，完成第一次提交并查看历史。
+            - paragraph [ref=e36]: 进度：Step 1 / 5
+            - generic [ref=e37]:
+              - heading "初始化仓库" [level=3] [ref=e38]
+              - generic [ref=e39]: 基础
+            - paragraph [ref=e40]: 输入 git init，在本地创建 Git 仓库。
+            - code [ref=e41]: git init
+            - paragraph [ref=e43]: 已进入 World 1 - 初始化仓库，请按提示输入命令。
+            - generic [ref=e44]:
+              - button "上一关" [ref=e45] [cursor=pointer]
+              - generic [ref=e46]: 1 / 13
+              - button "下一关" [ref=e47] [cursor=pointer]
+        - generic [ref=e48]:
+          - strong [ref=e54]: 终端
+          - generic [ref=e59]:
+            - textbox "Terminal input" [active] [ref=e60]
+            - generic:
+              - generic:
+                - generic: $
+        - generic [ref=e61]:
+          - strong [ref=e67]: 文件状态
+          - generic [ref=e70]:
+            - generic [ref=e71]:
+              - heading "工作区" [level=4] [ref=e72]
+              - list [ref=e73]:
+                - listitem [ref=e74]:
+                  - generic [ref=e75]: README.md
+                  - emphasis [ref=e76]: untracked
+                - listitem [ref=e77]:
+                  - generic [ref=e78]: app.js
+                  - emphasis [ref=e79]: untracked
+            - generic [ref=e80]:
+              - heading "暂存区" [level=4] [ref=e81]
+              - list [ref=e82]:
+                - listitem [ref=e83]: empty
+      - generic [ref=e85]:
+        - generic [ref=e86]:
+          - strong [ref=e92]: Graph View
+          - img [ref=e96]:
+            - generic [ref=e97]:
+              - generic [ref=e99]: 仓库还没有提交历史
+              - generic [ref=e100]: 在终端输入 git commit 后，这里会显示分支和提交图
+        - complementary [ref=e101]:
+          - generic [ref=e102]:
+            - strong [ref=e104]: 目标
+            - generic [ref=e105]: 基础
+          - generic [ref=e106]:
+            - heading "初始化仓库" [level=4] [ref=e107]
+            - paragraph [ref=e108]: 输入 git init，在本地创建 Git 仓库。
+            - code [ref=e109]: git init
+            - generic [ref=e110]: 也可在终端输入 hint 查看提示

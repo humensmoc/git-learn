@@ -7,13 +7,28 @@ interface TerminalPanelProps {
   history: string[];
   onCommand: (command: string) => void;
   getCompletions: (input: string) => string[];
+  darkMode?: boolean;
 }
 
-const PROMPT = "git-learn$ ";
+const lightTerminalTheme = {
+  background: "#3a3a3a",
+  foreground: "#f0f0f0",
+  cursor: "#c8e600",
+};
 
-export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPanelProps) => {
+const darkTerminalTheme = {
+  background: "#141c28",
+  foreground: "#e2e8f0",
+  cursor: "#c8e600",
+};
+
+const PROMPT = "$ ";
+
+export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = false }: TerminalPanelProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
   const termRef = useRef<Terminal | null>(null);
+  const onCommandRef = useRef(onCommand);
+  const getCompletionsRef = useRef(getCompletions);
   const lineBufferRef = useRef("");
   const cursorPosRef = useRef(0);
   const cmdHistoryRef = useRef<string[]>([]);
@@ -21,7 +36,12 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
   const printedRef = useRef(0);
   const safeFitRef = useRef<() => void>(() => undefined);
   const promptVisibleRef = useRef(false);
-  const isSubmittingRef = useRef(false);
+  const awaitingResultRef = useRef(false);
+
+  useEffect(() => {
+    onCommandRef.current = onCommand;
+    getCompletionsRef.current = getCompletions;
+  }, [getCompletions, onCommand]);
 
   const focusTerminal = () => {
     const term = termRef.current;
@@ -56,24 +76,21 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
   const printHistoryLines = (lines: string[]) => {
     const term = termRef.current;
     if (!term || lines.length === 0) return;
-    if (promptVisibleRef.current) {
-      term.write("\r\x1b[2K");
-    }
+    if (promptVisibleRef.current) term.write("\r\x1b[2K");
+    term.write("\r\n");
     lines.forEach((line) => term.writeln(line));
     promptVisibleRef.current = true;
+    awaitingResultRef.current = false;
     renderPromptLine();
   };
 
   useEffect(() => {
     const term = new Terminal({
-      theme: {
-        background: "#020617",
-        foreground: "#cbd5e1",
-        cursor: "#22d3ee",
-      },
+      theme: darkMode ? darkTerminalTheme : lightTerminalTheme,
       fontFamily: "JetBrains Mono, ui-monospace, Menlo, monospace",
       fontSize: 13,
       cursorBlink: true,
+      scrollback: 5000,
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
@@ -90,7 +107,6 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
     };
     safeFitRef.current = safeFit;
     requestAnimationFrame(safeFit);
-    term.writeln("欢迎来到 Git Learn 终端。输入 levels / hint / reset 或 git 命令开始。");
     promptVisibleRef.current = true;
     renderPromptLine();
     focusTerminal();
@@ -103,15 +119,16 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
       const char = data.charCodeAt(0);
       const buffer = lineBufferRef.current;
       const pos = cursorPosRef.current;
+      if (awaitingResultRef.current) return;
 
       if (data === "\r") {
         const command = lineBufferRef.current.trim();
-        term.writeln(`> ${lineBufferRef.current}`);
-        isSubmittingRef.current = true;
-        if (command) {
+        term.write("\r\n");
+        if (command.length > 0) {
           cmdHistoryRef.current.unshift(command);
           cmdHistoryCursorRef.current = -1;
-          onCommand(command);
+          awaitingResultRef.current = command.startsWith("git ");
+          onCommandRef.current(command);
         }
         lineBufferRef.current = "";
         cursorPosRef.current = 0;
@@ -127,7 +144,7 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
         return;
       }
       if (data === "\t") {
-        const suggestions = getCompletions(lineBufferRef.current);
+        const suggestions = getCompletionsRef.current(lineBufferRef.current);
         if (suggestions.length === 1) {
           setInputBuffer(suggestions[0], suggestions[0].length);
         } else if (suggestions.length > 1) {
@@ -179,7 +196,13 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
       hostRef.current?.removeEventListener("mousedown", focusTerminal);
       term.dispose();
     };
-  }, [getCompletions, onCommand]);
+  }, []);
+
+  useEffect(() => {
+    const term = termRef.current;
+    if (!term) return;
+    term.options.theme = darkMode ? darkTerminalTheme : lightTerminalTheme;
+  }, [darkMode]);
 
   useEffect(() => {
     safeFitRef.current();
@@ -189,12 +212,10 @@ export const TerminalPanel = ({ history, onCommand, getCompletions }: TerminalPa
     if (!termRef.current) return;
     const nextLines = history.slice(printedRef.current);
     if (!nextLines.length) return;
-    const lines = isSubmittingRef.current ? nextLines.filter((line) => !line.startsWith("> ")) : nextLines;
-    printHistoryLines(lines);
-    isSubmittingRef.current = false;
+    printHistoryLines(nextLines);
     printedRef.current = history.length;
   }, [history]);
 
-  return <section className="terminal-panel card" ref={hostRef} />;
+  return <section className="terminal-panel" ref={hostRef} />;
 };
 

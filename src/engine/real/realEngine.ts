@@ -21,6 +21,9 @@ export class RealEngine implements GitEngine {
     index: [],
     workingTree: [],
     files: [],
+    stashCount: 0,
+    hasGitignore: false,
+    upstreamSet: false,
   };
 
   async execute(command: string): Promise<EngineResult> {
@@ -88,6 +91,9 @@ export class RealEngine implements GitEngine {
       index: [],
       workingTree: [],
       files: [],
+      stashCount: 0,
+      hasGitignore: false,
+      upstreamSet: false,
     };
     return this.snapshot;
   }
@@ -136,6 +142,9 @@ export class RealEngine implements GitEngine {
         index: [],
         workingTree: [],
         files: [],
+        stashCount: 0,
+        hasGitignore: false,
+        upstreamSet: false,
       };
       return;
     }
@@ -148,7 +157,7 @@ export class RealEngine implements GitEngine {
     }
     const logs = await git.log({ fs, dir, depth: 50 }).catch(() => []);
     const statuses: RepoSnapshot["workingTree"] = [];
-    const files = await pfs.readdir(dir).catch(() => []);
+    const files = (await pfs.readdir(dir).catch(() => [])) as string[];
     for (const f of files) {
       if (f === ".git") continue;
       const status = await git.status({ fs, dir, filepath: f }).catch(() => "absent");
@@ -172,6 +181,9 @@ export class RealEngine implements GitEngine {
       index: [],
       workingTree: statuses,
       files: files.filter((f) => f !== ".git"),
+      stashCount: 0,
+      hasGitignore: files.includes(".gitignore"),
+      upstreamSet: false,
     };
   }
 

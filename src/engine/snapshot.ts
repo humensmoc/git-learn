@@ -34,6 +34,9 @@ export interface RepoSnapshot {
   index: string[];
   workingTree: WorkingTreeEntry[];
   files: string[];
+  stashCount: number;
+  hasGitignore: boolean;
+  upstreamSet: boolean;
 }
 
 export type AnimationEventType =

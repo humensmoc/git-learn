@@ -6,8 +6,7 @@ interface FilePanelProps {
 
 export const FilePanel = ({ snapshot }: FilePanelProps) => {
   return (
-    <section className="file-panel card">
-      <h3>文件状态</h3>
+    <section className="file-panel">
       <div className="file-groups">
         <div>
           <h4>工作区</h4>
