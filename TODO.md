@@ -1,5 +1,5 @@
 nerdy style
-cursor tab to git command
+git command auto 补全
 smoothly motion
 
 

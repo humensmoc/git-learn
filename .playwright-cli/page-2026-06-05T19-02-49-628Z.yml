@@ -1,0 +1,45 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - heading "Git 命令行教学网站" [level=1] [ref=e6]
+      - paragraph [ref=e7]: Learn Git Branching 流程 + git-sim 视觉风格（Web 动画版）
+    - generic [ref=e8]:
+      - button "上一关" [ref=e9] [cursor=pointer]
+      - button "下一关" [ref=e10] [cursor=pointer]
+      - 'button "音效: 开" [ref=e11] [cursor=pointer]'
+  - main [ref=e12]:
+    - generic [ref=e15]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - heading "World 1 - 创建仓库" [level=2] [ref=e20]
+            - generic [ref=e21]: SIM
+          - paragraph [ref=e22]: 从 git init 开始，完成第一次提交。
+          - paragraph [ref=e23]: 进度：Step 1 / 5
+          - heading "初始化仓库" [level=3] [ref=e24]
+          - paragraph [ref=e25]: 输入 git init，创建你的第一个仓库。
+          - code [ref=e26]: git init
+          - generic [ref=e27]:
+            - button "上一关" [ref=e28] [cursor=pointer]
+            - generic [ref=e29]: 1 / 5
+            - button "下一关" [ref=e30] [cursor=pointer]
+        - generic [ref=e34]:
+          - generic:
+            - textbox "Terminal input"
+        - generic [ref=e35]:
+          - heading "文件状态" [level=3] [ref=e36]
+          - generic [ref=e37]:
+            - generic [ref=e38]:
+              - heading "工作区" [level=4] [ref=e39]
+              - list [ref=e40]:
+                - listitem [ref=e41]: clean
+            - generic [ref=e42]:
+              - heading "暂存区" [level=4] [ref=e43]
+              - list [ref=e44]:
+                - listitem [ref=e45]: empty
+      - generic [ref=e47]:
+        - heading "Git 可视化" [level=3] [ref=e49]
+        - img [ref=e51]:
+          - generic [ref=e53]:
+            - generic [ref=e55]: 仓库还没有提交历史
+            - generic [ref=e56]: 在终端输入 git commit 后，这里会显示分支和提交图
