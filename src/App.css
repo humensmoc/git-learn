@@ -59,12 +59,38 @@ button:hover {
   height: 100%;
 }
 
-.left-stack {
+.left-split {
   height: 100%;
-  display: grid;
-  gap: 12px;
-  grid-template-rows: minmax(280px, 37%) minmax(210px, 1fr) minmax(170px, 26%);
   min-height: 0;
+}
+
+.left-split .window-chrome {
+  height: 100%;
+}
+
+.playground-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+
+.playground-page .split-root {
+  flex: 1;
+  min-height: 0;
+}
+
+.playground-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+button.mode-active {
+  border-color: var(--btn-hover-border);
+  background: var(--accent-soft, var(--btn-bg));
+  font-weight: 600;
 }
 
 .window-chrome {
@@ -384,12 +410,10 @@ button:hover {
   background: color-mix(in srgb, var(--bg-soft) 70%, transparent);
 }
 
-.goal-panel {
+.floating-panel {
   position: absolute;
-  top: 14px;
-  right: 16px;
-  width: min(300px, 40%);
-  min-width: 220px;
+  width: min(380px, 46%);
+  min-width: 260px;
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: var(--shadow-window);
@@ -397,8 +421,12 @@ button:hover {
   z-index: 4;
 }
 
-.goal-panel-header {
-  min-height: 30px;
+.floating-panel.is-collapsed {
+  width: min(320px, 40%);
+}
+
+.floating-panel-header {
+  min-height: 32px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -406,10 +434,50 @@ button:hover {
   background: var(--goal-header-bg);
   border-bottom: 1px solid var(--border);
   color: var(--text);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
 }
 
-.goal-panel-header .risk-badge {
+.floating-panel-header:active {
+  cursor: grabbing;
+}
+
+.floating-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  font-size: 12px;
+}
+
+.floating-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin-left: auto;
+}
+
+.floating-panel-toggle,
+.goal-hint-btn {
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+.floating-panel-body {
+  background: var(--goal-pink);
+  color: var(--goal-text);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
 }
 
 .goal-dot {
@@ -417,32 +485,54 @@ button:hover {
   height: 10px;
   border-radius: 999px;
   background: var(--text-soft);
+  flex-shrink: 0;
 }
 
-.goal-panel-body {
-  background: var(--goal-pink);
-  color: var(--goal-text);
-  padding: 10px;
+.goal-world-title {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-mode-tag {
+  font-style: normal;
+  font-size: 10px;
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--goal-text-soft);
+}
+
+.goal-description,
+.goal-progress {
+  margin: 0;
+  font-size: 12px;
+  color: var(--goal-text-soft);
+}
+
+.goal-step-meta {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
-.goal-panel-body h4,
-.goal-panel-body p {
+.floating-panel-body h4,
+.floating-panel-body p {
   margin: 0;
 }
 
-.goal-panel-body h4 {
+.floating-panel-body h4 {
   font-size: 14px;
 }
 
-.goal-panel-body p {
+.floating-panel-body p {
   font-size: 12px;
   line-height: 1.4;
 }
 
-.goal-panel-body code {
+.floating-panel-body code {
   display: inline-block;
   width: fit-content;
   font-family: var(--mono);
@@ -454,9 +544,140 @@ button:hover {
   color: var(--goal-text);
 }
 
-.goal-panel-body small {
+.floating-panel-body small {
   font-size: 11px;
   color: var(--goal-text-soft);
+}
+
+.goal-feedback {
+  border-top: 1px dashed color-mix(in srgb, var(--goal-text) 25%, transparent);
+  padding-top: 6px;
+}
+
+.goal-feedback p {
+  margin: 0 0 4px;
+  font-size: 12px;
+}
+
+.goal-world-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.goal-world-switch button {
+  font-size: 12px;
+  padding: 5px 9px;
+}
+
+.panel-mode-toggle {
+  display: flex;
+  gap: 4px;
+}
+
+.panel-mode-toggle button {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.panel-mode-toggle button.is-active {
+  border-color: var(--btn-hover-border);
+  font-weight: 600;
+}
+
+.git-shortcut-panel {
+  height: 100%;
+  overflow: auto;
+  padding: 10px;
+}
+
+.git-shortcut-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.git-shortcut-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.git-shortcut-item.is-expanded .git-shortcut-main {
+  border-color: var(--cursor-green, #c8e600);
+}
+
+.git-shortcut-main {
+  width: 100%;
+  text-align: left;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8edf5;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.git-shortcut-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 8px;
+}
+
+.shortcut-chip {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(200, 230, 0, 0.15);
+  color: #e8edf5;
+  border: 1px solid rgba(200, 230, 0, 0.35);
+}
+
+.text-input-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.text-input-dialog {
+  width: min(420px, 92vw);
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-window);
+}
+
+.text-input-dialog h3 {
+  margin: 0 0 10px;
+  font-size: 15px;
+}
+
+.text-input-dialog input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.text-input-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .split-root .split-view-sash {
@@ -464,10 +685,14 @@ button:hover {
 }
 
 @media (max-width: 1080px) {
-  .goal-panel {
+  .floating-panel {
     position: static;
     width: auto;
     min-width: 0;
     margin-top: 10px;
+  }
+
+  .floating-panel-header {
+    cursor: default;
   }
 }

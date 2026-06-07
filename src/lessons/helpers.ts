@@ -15,3 +15,6 @@ export const hasBranch = (snapshot: RepoSnapshot, name: string) =>
 
 export const hasRemote = (snapshot: RepoSnapshot, name: string) =>
   snapshot.remotes.some((remote) => remote.name === name);
+
+export const hasUpstreamTracking = (snapshot: RepoSnapshot, remote: string, branch: string) =>
+  snapshot.refs.some((ref) => ref.type === "remote" && ref.name === `${remote}/${branch}`);

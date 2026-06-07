@@ -1,6 +1,7 @@
 import git from "isomorphic-git";
 import LightningFS from "@isomorphic-git/lightning-fs";
 
+import type { RepoSeed } from "../seed";
 import type { EngineResult, RepoSnapshot } from "../snapshot";
 import type { GitEngine } from "../types";
 
@@ -79,7 +80,7 @@ export class RealEngine implements GitEngine {
     }
   }
 
-  async reset(): Promise<RepoSnapshot> {
+  async reset(_seed?: RepoSeed): Promise<RepoSnapshot> {
     await pfs.rmdir(dir).catch(() => undefined);
     this.initialized = false;
     this.snapshot = {
