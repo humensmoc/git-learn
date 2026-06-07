@@ -1,6 +1,7 @@
 import type { RepoSeed } from "../seed";
 import type { EngineResult, RepoSnapshot, RefNode, WorkingTreeEntry } from "../snapshot";
 import type { GitEngine } from "../types";
+import { parseWorkspaceCommand } from "../workspace";
 
 type BranchMap = Record<string, string>;
 
@@ -67,6 +68,11 @@ export class SimEngine implements GitEngine {
     const input = command.trim();
     if (!input) {
       return this.ok([""], []);
+    }
+
+    const workspace = parseWorkspaceCommand(input);
+    if (workspace) {
+      return this.handleWorkspace(workspace.op, workspace.path);
     }
 
     const tokens = input.split(/\s+/);
@@ -309,6 +315,39 @@ export class SimEngine implements GitEngine {
   private seedModified(file: string) {
     this.state.workingTree.set(file, "modified");
     this.state.files.add(file);
+  }
+
+  private handleWorkspace(op: string, path: string): EngineResult {
+    switch (op) {
+      case "touch": {
+        if (this.state.workingTree.has(path)) {
+          return this.ok([`文件 ${path} 已存在`], []);
+        }
+        this.state.files.add(path);
+        this.state.workingTree.set(path, "untracked");
+        return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+      }
+      case "edit": {
+        if (!this.state.workingTree.has(path)) {
+          this.state.files.add(path);
+          this.state.workingTree.set(path, "untracked");
+          return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+        }
+        const status = this.state.workingTree.get(path);
+        if (status === "staged") {
+          return this.ok([`${path} 已在暂存区`], []);
+        }
+        if (status === "clean") {
+          this.seedModified(path);
+          return this.ok([`已标记 ${path} 为已修改`], []);
+        }
+        return this.ok([`${path} 已是 ${status} 状态`], []);
+      }
+      case "rm":
+        return this.handleRm([path]);
+      default:
+        return this.ok([`workspace: 未知操作 '${op}'`], []);
+    }
   }
 
   private handleInit(): EngineResult {

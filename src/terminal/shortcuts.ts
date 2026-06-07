@@ -1,3 +1,5 @@
+export type InputPicker = "branch" | "file";
+
 export interface ShortcutOption {
   id: string;
   label: string;
@@ -5,6 +7,7 @@ export interface ShortcutOption {
   input?: {
     placeholder: string;
     wrap?: (value: string) => string;
+    picker?: InputPicker;
   };
 }
 
@@ -31,9 +34,9 @@ export const gitShortcuts: GitShortcut[] = [
       { id: "all", label: "-A", suffix: " -A" },
       {
         id: "file",
-        label: "文件…",
+        label: "指定文件",
         suffix: "",
-        input: { placeholder: "文件名，如 demo.txt", wrap: (v) => ` ${v}` },
+        input: { placeholder: "文件名，如 demo.txt", wrap: (v) => ` ${v}`, picker: "file" },
       },
     ],
   },
@@ -70,7 +73,7 @@ export const gitShortcuts: GitShortcut[] = [
       { id: "list", label: "列表", suffix: "" },
       {
         id: "create",
-        label: "新建…",
+        label: "新建分支",
         suffix: "",
         input: { placeholder: "分支名，如 feature", wrap: (v) => ` ${v}` },
       },
@@ -88,15 +91,15 @@ export const gitShortcuts: GitShortcut[] = [
     options: [
       {
         id: "branch",
-        label: "切换…",
+        label: "切换分支",
         suffix: "",
-        input: { placeholder: "分支名", wrap: (v) => ` ${v}` },
+        input: { placeholder: "分支名", wrap: (v) => ` ${v}`, picker: "branch" },
       },
       {
         id: "new",
-        label: "-b …",
+        label: "新建分支 -b",
         suffix: "",
-        input: { placeholder: "新分支名", wrap: (v) => ` -b ${v}` },
+        input: { placeholder: "新分支名", wrap: (v) => ` -b ${v}`, picker: "branch" },
       },
     ],
   },
@@ -107,13 +110,13 @@ export const gitShortcuts: GitShortcut[] = [
     options: [
       {
         id: "branch",
-        label: "切换…",
+        label: "切换分支",
         suffix: "",
-        input: { placeholder: "分支名", wrap: (v) => ` ${v}` },
+        input: { placeholder: "分支名", wrap: (v) => ` ${v}`, picker: "branch" },
       },
       {
         id: "create",
-        label: "-c …",
+        label: "新建分支 -c",
         suffix: "",
         input: { placeholder: "新分支名", wrap: (v) => ` -c ${v}` },
       },
@@ -126,9 +129,9 @@ export const gitShortcuts: GitShortcut[] = [
     options: [
       {
         id: "target",
-        label: "合并…",
+        label: "合并分支",
         suffix: "",
-        input: { placeholder: "分支名，如 main", wrap: (v) => ` ${v}` },
+        input: { placeholder: "分支名，如 main", wrap: (v) => ` ${v}`, picker: "branch" },
       },
     ],
   },
@@ -169,7 +172,7 @@ export const gitShortcuts: GitShortcut[] = [
       { id: "v", label: "-v", suffix: " -v" },
       {
         id: "add",
-        label: "add …",
+        label: "添加远程",
         suffix: "",
         input: {
           placeholder: "origin https://github.com/user/repo.git",

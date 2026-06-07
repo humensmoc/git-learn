@@ -20,11 +20,6 @@ export const WindowChrome = ({
   return (
     <section className={classes}>
       <header className="window-titlebar">
-        <div className="window-dots" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
         <strong>{title}</strong>
         <div className="window-slot">{rightSlot}</div>
       </header>

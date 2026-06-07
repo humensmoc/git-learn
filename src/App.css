@@ -8,28 +8,23 @@
   background: var(--canvas-blue);
 }
 
-.topbar {
+.app-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 9px 14px;
+  padding: 8px 12px;
   border: 1px solid var(--border);
   background: var(--topbar-bg);
-  border-radius: 11px;
+  border-radius: 8px;
   box-shadow: var(--shadow-elevated);
+  flex-shrink: 0;
 }
 
-.topbar h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: 0.1px;
-  color: var(--text);
-}
-
-.topbar-actions {
+.app-toolbar-left,
+.app-toolbar-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
+  align-items: center;
 }
 
 button {
@@ -72,19 +67,12 @@ button:hover {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
   min-height: 0;
 }
 
 .playground-page .split-root {
   flex: 1;
   min-height: 0;
-}
-
-.playground-toolbar {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
 }
 
 button.mode-active {
@@ -110,40 +98,16 @@ button.mode-active {
   background: var(--window-chrome);
   padding: 0 10px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
 }
 
 .window-titlebar strong {
   font-size: 12px;
-  text-align: center;
+  text-align: left;
   color: var(--text);
   font-weight: 600;
-}
-
-.window-dots {
-  display: flex;
-  gap: 6px;
-}
-
-.window-dots span {
-  width: 11px;
-  height: 11px;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.window-dots span:nth-child(1) {
-  background: #ff5f57;
-}
-
-.window-dots span:nth-child(2) {
-  background: #febc2e;
-}
-
-.window-dots span:nth-child(3) {
-  background: #28c840;
 }
 
 .window-slot {
@@ -340,51 +304,158 @@ button.mode-active {
   height: 100%;
   padding: 0;
   overflow: hidden;
+  background: var(--terminal-bg);
 }
 
-.terminal-panel .terminal {
+.terminal-panel .terminal,
+.terminal-panel .xterm-viewport {
+  width: 100%;
   height: 100%;
+  background: var(--terminal-bg);
 }
 
 .file-panel {
   padding: 10px;
   height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  gap: 8px;
 }
 
 .file-groups {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+
+.file-column {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .file-groups h4 {
   margin: 0 0 8px;
   color: var(--text-soft);
   font-size: 13px;
+  flex-shrink: 0;
 }
 
 .file-groups ul {
   list-style: none;
   padding: 0;
   margin: 0;
-  max-height: 122px;
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
 .file-groups li {
+  border-bottom: 1px dashed var(--border);
+}
+
+.file-row {
+  width: 100%;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 10px;
-  padding: 4px 0;
-  border-bottom: 1px dashed var(--border);
+  padding: 4px 2px;
+  border: none;
+  background: transparent;
   font-family: var(--mono);
   font-size: 12px;
   color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-.file-groups em {
+.file-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.file-row.is-selected {
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.file-empty {
+  padding: 4px 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+.file-status {
   font-style: normal;
+  font-size: 11px;
+}
+
+.file-status--untracked {
+  color: var(--git-add);
+}
+
+.file-status--modified {
   color: var(--warning);
+}
+
+.file-status--staged {
+  color: var(--git-flag);
+}
+
+.file-status--clean {
+  color: var(--text-soft);
+}
+
+.file-action-bar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 4px 0;
+  border-top: 1px solid var(--border);
+}
+
+.file-action-bar button {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.file-action-bar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.file-action-hint {
+  font-size: 11px;
+  color: var(--text-soft);
+}
+
+.file-toolbar {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+.file-toolbar button {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.file-toolbar button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .graph-pane-shell {
@@ -572,72 +643,180 @@ button.mode-active {
   padding: 5px 9px;
 }
 
-.panel-mode-toggle {
-  display: flex;
-  gap: 4px;
-}
-
-.panel-mode-toggle button {
+.shortcut-toggle {
   font-size: 11px;
   padding: 3px 8px;
   border-radius: 6px;
 }
 
-.panel-mode-toggle button.is-active {
+.shortcut-toggle.is-active {
   border-color: var(--btn-hover-border);
   font-weight: 600;
 }
 
-.git-shortcut-panel {
+.terminal-shell {
   height: 100%;
-  overflow: auto;
-  padding: 10px;
-}
-
-.git-shortcut-grid {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0;
+  min-height: 0;
+  background: var(--terminal-bg);
 }
 
-.git-shortcut-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+.terminal-shell .terminal-panel {
+  flex: 1;
+  min-height: 0;
 }
 
-.git-shortcut-item.is-expanded .git-shortcut-main {
-  border-color: var(--cursor-green, #c8e600);
+/* --- 快捷坞动画：临时禁用，恢复时还原下方注释中的 transition --- */
+
+.shortcut-dock {
+  flex-shrink: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  /* transition: max-height 280ms ease, opacity 200ms ease; */
+  transition: none;
 }
 
-.git-shortcut-main {
-  width: 100%;
-  text-align: left;
+.shortcut-dock:not(.is-open) {
+  height: 0;
+  min-height: 0;
+  border: none;
+}
+
+.shortcut-dock.is-open {
+  max-height: 160px;
+  opacity: 1;
+  background: var(--terminal-bg);
+}
+
+.command-log-line {
   font-family: var(--mono);
   font-size: 12px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #e8edf5;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  line-height: 1.4;
+  word-break: break-word;
 }
 
-.git-shortcut-options {
+.shortcut-toolbar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
-  padding-left: 8px;
+  padding: 8px 10px 10px;
+  background: var(--terminal-bg);
 }
 
-.shortcut-chip {
+.shortcut-pill {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  /* transition: box-shadow 200ms ease; */
+  transition: none;
+}
+
+.shortcut-pill.is-expanded {
+  align-items: center;
+  gap: 6px;
+  padding-right: 6px;
+  overflow: hidden;
+  flex-wrap: nowrap;
+}
+
+.pill-main {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 400;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #e8edf5;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pill-main:hover,
+.pill-sub:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.pill-options {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  max-width: 0;
+  /* transition: max-width 280ms ease; */
+  transition: none;
+}
+
+.shortcut-pill.is-expanded .pill-options {
+  max-width: 560px;
+  overflow: hidden;
+  padding-left: 6px;
+}
+
+.pill-sub {
   font-family: var(--mono);
   font-size: 11px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: rgba(200, 230, 0, 0.15);
-  color: #e8edf5;
-  border: 1px solid rgba(200, 230, 0, 0.35);
+  font-weight: 400;
+  padding: 4px 0;
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--git-flag) 45%, transparent);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--git-flag);
+  flex-shrink: 0;
+  /* transition:
+    max-width 280ms ease,
+    opacity 200ms ease,
+    padding 280ms ease; */
+  /* transition-delay: calc(var(--delay, 0) * 80ms); */
+  transition: none;
 }
+
+.shortcut-pill.is-expanded .pill-sub {
+  max-width: 140px;
+  opacity: 1;
+  padding: 4px 8px;
+}
+
+.git-token--keyword { color: var(--git-keyword); }
+.git-token--flag { color: var(--git-flag); }
+.git-token--string { color: var(--git-string); }
+.git-token--plain { color: var(--git-default); }
+.git-token--init, .shortcut-pill--init .pill-main { color: var(--git-init); }
+.shortcut-pill--init { border-color: color-mix(in srgb, var(--git-init) 45%, transparent); }
+.git-token--status, .shortcut-pill--status .pill-main { color: var(--git-status); }
+.shortcut-pill--status { border-color: color-mix(in srgb, var(--git-status) 45%, transparent); }
+.git-token--add, .shortcut-pill--add .pill-main { color: var(--git-add); }
+.shortcut-pill--add { border-color: color-mix(in srgb, var(--git-add) 45%, transparent); }
+.git-token--commit, .shortcut-pill--commit .pill-main { color: var(--git-commit); }
+.shortcut-pill--commit { border-color: color-mix(in srgb, var(--git-commit) 45%, transparent); }
+.git-token--branch, .git-token--checkout, .git-token--switch,
+.shortcut-pill--branch .pill-main, .shortcut-pill--checkout .pill-main, .shortcut-pill--switch .pill-main { color: var(--git-branch); }
+.shortcut-pill--branch, .shortcut-pill--checkout, .shortcut-pill--switch { border-color: color-mix(in srgb, var(--git-branch) 45%, transparent); }
+.git-token--merge, .git-token--rebase, .shortcut-pill--merge .pill-main { color: var(--git-merge); }
+.shortcut-pill--merge { border-color: color-mix(in srgb, var(--git-merge) 45%, transparent); }
+.git-token--stash, .shortcut-pill--stash .pill-main { color: var(--git-stash); }
+.shortcut-pill--stash { border-color: color-mix(in srgb, var(--git-stash) 45%, transparent); }
+.git-token--log, .git-token--diff, .shortcut-pill--log .pill-main { color: var(--git-log); }
+.shortcut-pill--log { border-color: color-mix(in srgb, var(--git-log) 45%, transparent); }
+.git-token--push, .git-token--pull, .git-token--fetch, .git-token--remote, .git-token--clone,
+.shortcut-pill--push .pill-main, .shortcut-pill--pull .pill-main, .shortcut-pill--remote .pill-main { color: var(--git-remote); }
+.shortcut-pill--push, .shortcut-pill--pull, .shortcut-pill--remote { border-color: color-mix(in srgb, var(--git-remote) 45%, transparent); }
+.git-token--reset, .git-token--restore, .git-token--revert, .git-token--rm,
+.shortcut-pill--reset .pill-main, .shortcut-pill--restore .pill-main { color: var(--git-reset); }
+.shortcut-pill--reset, .shortcut-pill--restore { border-color: color-mix(in srgb, var(--git-reset) 45%, transparent); }
+.git-token--default { color: var(--git-default); }
 
 .text-input-dialog-backdrop {
   position: fixed;
@@ -663,6 +842,64 @@ button.mode-active {
   font-size: 15px;
 }
 
+.help-dialog {
+  width: min(520px, 92vw);
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+
+.help-dialog-body {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.help-dialog-body section {
+  margin-bottom: 14px;
+}
+
+.help-dialog-body section:last-child {
+  margin-bottom: 0;
+}
+
+.help-dialog-body h4 {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.help-dialog-body p {
+  margin: 0;
+}
+
+.help-dialog-body ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.help-dialog-body li {
+  margin-bottom: 4px;
+}
+
+.help-dialog-body li:last-child {
+  margin-bottom: 0;
+}
+
+.help-dialog-body code {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--code-bg);
+  color: var(--code-text);
+  border: 1px solid var(--border);
+}
+
 .text-input-dialog input {
   width: 100%;
   box-sizing: border-box;
@@ -672,6 +909,33 @@ button.mode-active {
   font-family: var(--mono);
   font-size: 13px;
   margin-bottom: 12px;
+}
+
+.param-picker-quick {
+  margin-bottom: 12px;
+}
+
+.param-picker-quick-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-soft);
+  margin-bottom: 6px;
+}
+
+.param-picker-quick-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.param-picker-chip {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--git-branch) 12%, var(--bg-elevated));
+  color: var(--git-branch);
 }
 
 .text-input-dialog-actions {

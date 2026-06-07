@@ -3,56 +3,37 @@ import { Allotment } from "allotment";
 
 import { FilePanel } from "../components/FilePanel";
 import { GitGraph } from "../components/GitGraph";
-import { GitShortcutPanel } from "../components/GitShortcutPanel";
-import { TerminalPanel } from "../components/TerminalPanel";
+import { TerminalShell } from "../components/TerminalShell";
 import { WindowChrome } from "../components/WindowChrome";
 import type { RepoSnapshot } from "../engine/snapshot";
+import type { EngineMode } from "../engine/types";
+import type { CommandSource } from "../terminal/commandLog";
 
-type PanelMode = "terminal" | "shortcuts";
+export interface CommandHandlerMeta {
+  source?: CommandSource;
+  shortcutId?: string;
+}
 
 interface PlaygroundLayoutProps {
   snapshot: RepoSnapshot;
   history: string[];
-  onCommand: (command: string) => void | Promise<void>;
+  engineMode: EngineMode;
+  onCommand: (command: string, meta?: CommandHandlerMeta) => void | Promise<void>;
   getCompletions: (input: string) => string[];
   darkMode: boolean;
   rightOverlay?: ReactNode;
 }
 
-const PanelModeToggle = ({
-  mode,
-  onChange,
-}: {
-  mode: PanelMode;
-  onChange: (mode: PanelMode) => void;
-}) => (
-  <div className="panel-mode-toggle">
-    <button
-      type="button"
-      className={mode === "terminal" ? "is-active" : ""}
-      onClick={() => onChange("terminal")}
-    >
-      终端
-    </button>
-    <button
-      type="button"
-      className={mode === "shortcuts" ? "is-active" : ""}
-      onClick={() => onChange("shortcuts")}
-    >
-      快捷
-    </button>
-  </div>
-);
-
 export const PlaygroundLayout = ({
   snapshot,
   history,
+  engineMode,
   onCommand,
   getCompletions,
   darkMode,
   rightOverlay,
 }: PlaygroundLayoutProps) => {
-  const [panelMode, setPanelMode] = useState<PanelMode>("terminal");
+  const [shortcutOpen, setShortcutOpen] = useState(false);
 
   return (
     <Allotment className="split-root" proportionalLayout defaultSizes={[35, 65]}>
@@ -60,25 +41,37 @@ export const PlaygroundLayout = ({
         <Allotment vertical className="left-split" defaultSizes={[62, 38]}>
           <Allotment.Pane minSize={160}>
             <WindowChrome
-              title={panelMode === "terminal" ? "终端" : "Git 快捷"}
+              title="终端"
               variant="dark"
-              rightSlot={<PanelModeToggle mode={panelMode} onChange={setPanelMode} />}
+              rightSlot={
+                <button
+                  type="button"
+                  className={`shortcut-toggle${shortcutOpen ? " is-active" : ""}`}
+                  onClick={() => setShortcutOpen((v) => !v)}
+                >
+                  快捷
+                </button>
+              }
             >
-              {panelMode === "terminal" ? (
-                <TerminalPanel
-                  history={history}
-                  onCommand={onCommand}
-                  getCompletions={getCompletions}
-                  darkMode={darkMode}
-                />
-              ) : (
-                <GitShortcutPanel onCommand={onCommand} />
-              )}
+              <TerminalShell
+                history={history}
+                snapshot={snapshot}
+                shortcutOpen={shortcutOpen}
+                onCommand={(cmd, shortcutId) =>
+                  onCommand(cmd, { source: shortcutId ? "shortcut" : "terminal", shortcutId })
+                }
+                getCompletions={getCompletions}
+                darkMode={darkMode}
+              />
             </WindowChrome>
           </Allotment.Pane>
           <Allotment.Pane minSize={120}>
             <WindowChrome title="文件状态">
-              <FilePanel snapshot={snapshot} />
+              <FilePanel
+                snapshot={snapshot}
+                engineMode={engineMode}
+                onCommand={(cmd, meta) => onCommand(cmd, meta)}
+              />
             </WindowChrome>
           </Allotment.Pane>
         </Allotment>

@@ -4,6 +4,7 @@ import LightningFS from "@isomorphic-git/lightning-fs";
 import type { RepoSeed } from "../seed";
 import type { EngineResult, RepoSnapshot } from "../snapshot";
 import type { GitEngine } from "../types";
+import { parseWorkspaceCommand } from "../workspace";
 
 const fs = new LightningFS("git-learn-fs");
 const pfs = fs.promises;
@@ -30,6 +31,12 @@ export class RealEngine implements GitEngine {
   async execute(command: string): Promise<EngineResult> {
     const tokens = command.trim().split(/\s+/);
     if (!tokens[0]) return this.ok([""], []);
+
+    const workspace = parseWorkspaceCommand(command);
+    if (workspace) {
+      return this.handleWorkspace(workspace.op, workspace.path);
+    }
+
     if (tokens[0] !== "git") return this.ok(["real 模式仅支持 git 命令"], []);
     const sub = tokens[1];
     const args = tokens.slice(2);
@@ -130,6 +137,70 @@ export class RealEngine implements GitEngine {
       await pfs.mkdir(current).catch(() => undefined);
     }
     await pfs.writeFile(absolute, `demo ${Date.now()}`);
+  }
+
+  private async handleWorkspace(op: string, path: string): Promise<EngineResult> {
+    try {
+      await this.ensureRepoDir();
+      switch (op) {
+        case "touch": {
+          const exists = await pfs.stat(`${dir}/${path}`).catch(() => null);
+          if (exists) return this.ok([`文件 ${path} 已存在`], []);
+          await this.ensureFile(path);
+          await this.syncLooseSnapshot(path, "untracked");
+          return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+        }
+        case "edit": {
+          const exists = await pfs.stat(`${dir}/${path}`).catch(() => null);
+          if (!exists) {
+            await this.ensureFile(path);
+            await this.syncLooseSnapshot(path, "untracked");
+            return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+          }
+          await this.ensureFile(path);
+          if (this.initialized) {
+            await this.refreshSnapshot();
+            return this.ok([`已更新 ${path}`], []);
+          }
+          await this.syncLooseSnapshot(path, "modified");
+          return this.ok([`已标记 ${path} 为已修改`], []);
+        }
+        case "rm": {
+          await pfs.unlink(`${dir}/${path}`).catch(() => undefined);
+          if (this.initialized) {
+            await git.remove({ fs, dir, filepath: path }).catch(() => undefined);
+            await this.refreshSnapshot();
+          } else {
+            this.snapshot = {
+              ...this.snapshot,
+              files: this.snapshot.files.filter((f) => f !== path),
+              workingTree: this.snapshot.workingTree.filter((e) => e.path !== path),
+            };
+          }
+          return this.ok([`已删除 ${path}`], []);
+        }
+        default:
+          return this.ok([`workspace: 未知操作 '${op}'`], []);
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return this.ok([`real 引擎错误: ${message}`], []);
+    }
+  }
+
+  private async syncLooseSnapshot(path: string, status: "untracked" | "modified") {
+    if (this.initialized) {
+      await this.refreshSnapshot();
+      return;
+    }
+    this.snapshot = {
+      ...this.snapshot,
+      files: [...new Set([...this.snapshot.files, path])],
+      workingTree: [
+        ...this.snapshot.workingTree.filter((e) => e.path !== path),
+        { path, status },
+      ],
+    };
   }
 
   private async refreshSnapshot() {

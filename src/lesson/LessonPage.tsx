@@ -2,6 +2,7 @@ import { useCallback, useMemo } from "react";
 
 import { LessonGoalPanel } from "../components/GoalPanel";
 import type { GitSession } from "../hooks/useGitSession";
+import type { CommandSource } from "../terminal/commandLog";
 import { worlds } from "../lessons/data";
 import { PlaygroundLayout } from "../playground/PlaygroundLayout";
 import { useLessonController } from "./controller";
@@ -16,7 +17,7 @@ export const LessonPage = ({ session, darkMode, onPlayTick }: LessonPageProps) =
   const lesson = useLessonController(session);
 
   const onCommand = useCallback(
-    async (command: string) => {
+    async (command: string, meta?: { source?: CommandSource; shortcutId?: string }) => {
       onPlayTick();
       if (command === "levels" || command === "hint") {
         lesson.handleMetaCommand(command);
@@ -27,7 +28,11 @@ export const LessonPage = ({ session, darkMode, onPlayTick }: LessonPageProps) =
         return;
       }
 
-      const result = await session.run(command);
+      const source = meta?.source ?? (meta?.shortcutId ? "shortcut" : "terminal");
+      const result = await session.runCommand(command, {
+        source,
+        shortcutId: meta?.shortcutId,
+      });
       lesson.onGitResult(result.snapshot, command, result.output.length > 0);
     },
     [lesson, onPlayTick, session],
@@ -58,6 +63,7 @@ export const LessonPage = ({ session, darkMode, onPlayTick }: LessonPageProps) =
     <PlaygroundLayout
       snapshot={session.snapshot}
       history={session.history}
+      engineMode={session.mode}
       onCommand={onCommand}
       getCompletions={getCompletions}
       darkMode={darkMode}
