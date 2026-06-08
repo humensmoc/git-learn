@@ -1,15 +1,15 @@
-import type { RepoSnapshot } from "../engine/snapshot";
+import type { SeedId } from "../engine/seed";
 
 export type RiskLevel = "basic" | "advanced" | "danger";
 
 export interface LessonStep {
   id: string;
+  validatorId: string;
   title: string;
   instruction: string;
   commandHint: string;
   riskLevel?: RiskLevel;
   riskNote?: string;
-  validate: (snapshot: RepoSnapshot, command: string) => boolean;
 }
 
 export interface LessonWorld {
@@ -17,6 +17,7 @@ export interface LessonWorld {
   title: string;
   description: string;
   mode: "sim" | "real";
+  seedId?: SeedId;
   steps: LessonStep[];
 }
 

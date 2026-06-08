@@ -1,5 +1,7 @@
+import type { RepoSeed } from "../seed";
 import type { EngineResult, RepoSnapshot, RefNode, WorkingTreeEntry } from "../snapshot";
 import type { GitEngine } from "../types";
+import { parseWorkspaceCommand } from "../workspace";
 
 type BranchMap = Record<string, string>;
 
@@ -68,6 +70,11 @@ export class SimEngine implements GitEngine {
       return this.ok([""], []);
     }
 
+    const workspace = parseWorkspaceCommand(input);
+    if (workspace) {
+      return this.handleWorkspace(workspace.op, workspace.path);
+    }
+
     const tokens = input.split(/\s+/);
     if (tokens[0] !== "git") {
       return this.ok([`未知命令: ${input}`, "提示: 请输入 git 子命令。"], []);
@@ -123,8 +130,8 @@ export class SimEngine implements GitEngine {
     }
   }
 
-  async reset(): Promise<RepoSnapshot> {
-    this.state = this.createInitialState();
+  async reset(seed?: RepoSeed): Promise<RepoSnapshot> {
+    this.loadFromSeed(seed);
     return this.getSnapshot();
   }
 
@@ -216,6 +223,77 @@ export class SimEngine implements GitEngine {
     };
   }
 
+  private loadFromSeed(seed?: RepoSeed): void {
+    const id = seed?.id ?? "empty";
+    this.state = this.createInitialState();
+
+    const addCommit = (message: string, author = "student") => {
+      const hash = shortHash();
+      const commit: SimCommit = {
+        hash,
+        parents: this.state.commits.length ? [this.state.commits[this.state.commits.length - 1].hash] : [],
+        message,
+        author,
+        timestamp: Date.now(),
+      };
+      this.state.commits.push(commit);
+      return hash;
+    };
+
+    switch (id) {
+      case "empty":
+        break;
+      case "initialized-no-commit":
+        this.state.initialized = true;
+        break;
+      case "main-with-commit": {
+        this.state.initialized = true;
+        const hash = addCommit("initial commit");
+        this.state.branches.main = hash;
+        this.state.files.add("README.md");
+        this.state.files.add("app.js");
+        this.state.workingTree.set("README.md", "clean");
+        this.state.workingTree.set("app.js", "clean");
+        break;
+      }
+      case "with-remote": {
+        this.state.initialized = true;
+        const hash = addCommit("initial commit");
+        this.state.branches.main = hash;
+        this.state.files.add("README.md");
+        this.state.workingTree.set("README.md", "clean");
+        this.state.remotes.origin = {
+          url: "https://github.com/demo/repo.git",
+          branches: { main: hash },
+        };
+        break;
+      }
+      case "two-branches": {
+        this.state.initialized = true;
+        const hash = addCommit("initial commit");
+        this.state.branches.main = hash;
+        this.state.branches.feature = hash;
+        this.state.files.add("README.md");
+        this.state.workingTree.set("README.md", "clean");
+        break;
+      }
+      case "with-stash": {
+        this.state.initialized = true;
+        this.state.workingTree.set("README.md", "modified");
+        this.state.stashes.push({ files: ["README.md"], message: "WIP on main" });
+        break;
+      }
+      case "with-gitignore": {
+        this.state.initialized = true;
+        this.state.hasGitignore = true;
+        this.state.files.add(".gitignore");
+        this.state.workingTree.set(".gitignore", "untracked");
+        this.state.workingTree.set("README.md", "untracked");
+        break;
+      }
+    }
+  }
+
   private ok(output: string[], events: EngineResult["events"]): EngineResult {
     return {
       output,
@@ -237,6 +315,39 @@ export class SimEngine implements GitEngine {
   private seedModified(file: string) {
     this.state.workingTree.set(file, "modified");
     this.state.files.add(file);
+  }
+
+  private handleWorkspace(op: string, path: string): EngineResult {
+    switch (op) {
+      case "touch": {
+        if (this.state.workingTree.has(path)) {
+          return this.ok([`文件 ${path} 已存在`], []);
+        }
+        this.state.files.add(path);
+        this.state.workingTree.set(path, "untracked");
+        return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+      }
+      case "edit": {
+        if (!this.state.workingTree.has(path)) {
+          this.state.files.add(path);
+          this.state.workingTree.set(path, "untracked");
+          return this.ok([`已创建文件 ${path}（未跟踪）`], []);
+        }
+        const status = this.state.workingTree.get(path);
+        if (status === "staged") {
+          return this.ok([`${path} 已在暂存区`], []);
+        }
+        if (status === "clean") {
+          this.seedModified(path);
+          return this.ok([`已标记 ${path} 为已修改`], []);
+        }
+        return this.ok([`${path} 已是 ${status} 状态`], []);
+      }
+      case "rm":
+        return this.handleRm([path]);
+      default:
+        return this.ok([`workspace: 未知操作 '${op}'`], []);
+    }
   }
 
   private handleInit(): EngineResult {

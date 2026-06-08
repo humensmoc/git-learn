@@ -1,8 +1,5 @@
-import type { LessonStep, RiskLevel } from "../lessons/types";
-
-interface GoalPanelProps {
-  step: LessonStep;
-}
+import type { LessonStep, LessonWorld, RiskLevel } from "../lessons/types";
+import { FloatingPanel } from "./FloatingPanel";
 
 const riskLabel: Record<RiskLevel, string> = {
   basic: "基础",
@@ -10,21 +7,71 @@ const riskLabel: Record<RiskLevel, string> = {
   danger: "危险",
 };
 
-export const GoalPanel = ({ step }: GoalPanelProps) => {
-  return (
-    <aside className="goal-panel">
-      <header className="goal-panel-header">
-        <span className="goal-dot" aria-hidden="true" />
+export interface LessonGoalPanelProps {
+  world: LessonWorld;
+  worldIndex: number;
+  totalWorlds: number;
+  stepIndex: number;
+  step: LessonStep;
+  feedback: string[];
+  onSelectWorld: (index: number) => void;
+  onHint: () => void;
+}
+
+export const LessonGoalPanel = ({
+  world,
+  worldIndex,
+  totalWorlds,
+  stepIndex,
+  step,
+  feedback,
+  onSelectWorld,
+  onHint,
+}: LessonGoalPanelProps) => (
+  <FloatingPanel
+    className="goal-panel"
+    title={
+      <>
         <strong>目标</strong>
-        {step.riskLevel ? <span className={`risk-badge risk-${step.riskLevel}`}>{riskLabel[step.riskLevel]}</span> : null}
-      </header>
-      <div className="goal-panel-body">
-        <h4>{step.title}</h4>
-        <p>{step.instruction}</p>
-        <code>{step.commandHint}</code>
-        {step.riskNote ? <p className="goal-risk-note">{step.riskNote}</p> : null}
-        <small>也可在终端输入 hint 查看提示</small>
+        <span className="goal-world-title">{world.title}</span>
+        <em className="goal-mode-tag">{world.mode.toUpperCase()}</em>
+      </>
+    }
+    titleExtra={
+      <button type="button" className="goal-hint-btn" onClick={onHint}>
+        提示
+      </button>
+    }
+  >
+    <p className="goal-description">{world.description}</p>
+    <p className="goal-progress">
+      进度：Step {stepIndex + 1} / {world.steps.length}
+    </p>
+    <div className="goal-step-meta">
+      <h4>{step.title}</h4>
+      {step.riskLevel ? <span className={`risk-badge risk-${step.riskLevel}`}>{riskLabel[step.riskLevel]}</span> : null}
+    </div>
+    <p>{step.instruction}</p>
+    <code>{step.commandHint}</code>
+    {step.riskNote ? <p className="goal-risk-note">{step.riskNote}</p> : null}
+    {feedback.length > 0 ? (
+      <div className="goal-feedback" aria-live="polite">
+        {feedback.map((line, idx) => (
+          <p key={`${line}-${idx}`}>{line}</p>
+        ))}
       </div>
-    </aside>
-  );
-};
+    ) : null}
+    <small>也可在终端输入 hint 查看提示</small>
+    <div className="goal-world-switch">
+      <button type="button" onClick={() => onSelectWorld(Math.max(0, worldIndex - 1))}>
+        上一关
+      </button>
+      <span>
+        {worldIndex + 1} / {totalWorlds}
+      </span>
+      <button type="button" onClick={() => onSelectWorld(Math.min(totalWorlds - 1, worldIndex + 1))}>
+        下一关
+      </button>
+    </div>
+  </FloatingPanel>
+);

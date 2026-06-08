@@ -26,16 +26,25 @@ export interface RemoteNode {
 }
 
 export interface RepoSnapshot {
+  /** Git 仓库是否已 init */
   initialized: boolean;
+  /** 提交对象列表（DAG 节点） */
   commits: CommitNode[];
+  /** 本地分支、标签与远程跟踪 ref */
   refs: RefNode[];
+  /** 当前 HEAD 指向的分支名或 detached commit */
   head: string;
   remotes: RemoteNode[];
+  /** 暂存区（index）中的文件路径 */
   index: string[];
   workingTree: WorkingTreeEntry[];
+  /** 工作区已知文件路径 */
   files: string[];
+  /** stash 栈深度（Git 可观测状态） */
   stashCount: number;
+  /** @deprecated 优先使用 files.includes(".gitignore")；保留供引擎过渡 */
   hasGitignore: boolean;
+  /** @deprecated 优先检查 refs 中 origin/branch；保留供引擎过渡 */
   upstreamSet: boolean;
 }
 

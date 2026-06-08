@@ -1,0 +1,164 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - button "重置仓库" [ref=e6] [cursor=pointer]
+      - 'button "引擎: SIM" [ref=e7] [cursor=pointer]'
+    - generic [ref=e8]:
+      - button "使用说明" [active] [ref=e9] [cursor=pointer]
+      - button "自由沙盒" [ref=e10] [cursor=pointer]
+      - button "课程模式" [ref=e11] [cursor=pointer]
+      - button "测试" [ref=e12] [cursor=pointer]
+      - 'button "音效: 开" [ref=e13] [cursor=pointer]'
+      - 'button "夜间模式: 开" [ref=e14] [cursor=pointer]'
+  - main [ref=e15]:
+    - generic [ref=e19]:
+      - generic [ref=e23]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - strong [ref=e27]: 终端
+            - button "快捷" [ref=e29] [cursor=pointer]
+          - generic [ref=e31]:
+            - generic [ref=e35]:
+              - textbox "Terminal input" [ref=e36]
+              - generic:
+                - generic:
+                  - generic: $
+            - generic [ref=e37]:
+              - button "init" [ref=e39] [cursor=pointer]
+              - button "status" [ref=e41] [cursor=pointer]
+              - generic [ref=e42]:
+                - button "add" [ref=e43] [cursor=pointer]
+                - button [ref=e44] [cursor=pointer]: .
+                - button [ref=e45] [cursor=pointer]: README.md
+                - button [ref=e46] [cursor=pointer]: "-A"
+                - button [ref=e47] [cursor=pointer]: 指定文件
+              - generic [ref=e48]:
+                - button "commit" [ref=e49] [cursor=pointer]
+                - button [ref=e50] [cursor=pointer]: "-m"
+                - button [ref=e51] [cursor=pointer]: "-am"
+                - button [ref=e52] [cursor=pointer]: "--amend"
+              - generic [ref=e53]:
+                - button "branch" [ref=e54] [cursor=pointer]
+                - button [ref=e55] [cursor=pointer]: 列表
+                - button [ref=e56] [cursor=pointer]: 新建分支
+                - button [ref=e57] [cursor=pointer]: "-M main"
+              - generic [ref=e58]:
+                - button "checkout" [ref=e59] [cursor=pointer]
+                - button [ref=e60] [cursor=pointer]: 切换分支
+                - button [ref=e61] [cursor=pointer]: 新建分支 -b
+              - generic [ref=e62]:
+                - button "switch" [ref=e63] [cursor=pointer]
+                - button [ref=e64] [cursor=pointer]: 切换分支
+                - button [ref=e65] [cursor=pointer]: 新建分支 -c
+              - generic [ref=e66]:
+                - button "merge" [ref=e67] [cursor=pointer]
+                - button [ref=e68] [cursor=pointer]: 合并分支
+              - generic [ref=e69]:
+                - button "stash" [ref=e70] [cursor=pointer]
+                - button [ref=e71] [cursor=pointer]: save
+                - button [ref=e72] [cursor=pointer]: list
+                - button [ref=e73] [cursor=pointer]: pop
+              - generic [ref=e74]:
+                - button "log" [ref=e75] [cursor=pointer]
+                - button [ref=e76] [cursor=pointer]: "--oneline"
+              - generic [ref=e77]:
+                - button "push" [ref=e78] [cursor=pointer]
+                - button [ref=e79] [cursor=pointer]: "-u origin main"
+                - button [ref=e80] [cursor=pointer]: origin main
+              - generic [ref=e81]:
+                - button "pull" [ref=e82] [cursor=pointer]
+                - button [ref=e83] [cursor=pointer]: pull
+                - button [ref=e84] [cursor=pointer]: "--rebase"
+              - generic [ref=e85]:
+                - button "remote" [ref=e86] [cursor=pointer]
+                - button [ref=e87] [cursor=pointer]: "-v"
+                - button [ref=e88] [cursor=pointer]: 添加远程
+              - generic [ref=e89]:
+                - button "reset" [ref=e90] [cursor=pointer]
+                - button [ref=e91] [cursor=pointer]: "--soft HEAD~1"
+                - button [ref=e92] [cursor=pointer]: "--hard HEAD~1"
+                - button [ref=e93] [cursor=pointer]: HEAD file
+              - generic [ref=e94]:
+                - button "restore" [ref=e95] [cursor=pointer]
+                - button [ref=e96] [cursor=pointer]: 文件
+                - button [ref=e97] [cursor=pointer]: "--staged"
+        - generic [ref=e99]:
+          - strong [ref=e101]: 文件状态
+          - generic [ref=e103]:
+            - generic [ref=e104]:
+              - generic [ref=e105]:
+                - heading "工作区" [level=4] [ref=e106]
+                - list [ref=e107]:
+                  - listitem [ref=e108]:
+                    - button "README.md untracked" [ref=e109] [cursor=pointer]:
+                      - generic [ref=e110]: README.md
+                      - emphasis [ref=e111]: untracked
+                  - listitem [ref=e112]:
+                    - button "app.js untracked" [ref=e113] [cursor=pointer]:
+                      - generic [ref=e114]: app.js
+                      - emphasis [ref=e115]: untracked
+              - generic [ref=e116]:
+                - heading "暂存区" [level=4] [ref=e117]
+                - list [ref=e118]:
+                  - listitem [ref=e119]: empty
+            - generic [ref=e121]: 点击文件以操作
+            - generic [ref=e122]:
+              - button "+ 添加文件" [ref=e123] [cursor=pointer]
+              - button "− 删除选中" [disabled] [ref=e124]
+              - button "全部暂存" [disabled] [ref=e125]
+      - generic [ref=e128]:
+        - strong [ref=e130]: Graph View
+        - img [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e137]: 仓库还没有提交历史
+            - generic [ref=e138]: 在终端输入 git commit 后，这里会显示分支和提交图
+  - dialog "使用说明" [ref=e139]:
+    - heading "使用说明" [level=3] [ref=e140]
+    - generic [ref=e141]:
+      - generic [ref=e142]:
+        - heading "模式" [level=4] [ref=e143]
+        - paragraph [ref=e144]:
+          - strong [ref=e145]: 自由沙盒
+          - text: ：随意练习 Git 命令，可切换 Sim / Real 引擎并重置仓库。
+          - strong [ref=e146]: 课程模式
+          - text: ：按关卡引导学习，系统自动校验步骤并保存进度。
+      - generic [ref=e147]:
+        - heading "左栏" [level=4] [ref=e148]
+        - list [ref=e149]:
+          - listitem [ref=e150]:
+            - strong [ref=e151]: 终端
+            - text: ：输入 Git 命令；点击「快捷」打开命令快捷坞。
+          - listitem [ref=e152]:
+            - strong [ref=e153]: 文件状态
+            - text: ：查看工作区与暂存区，可点击文件进行操作。
+      - generic [ref=e154]:
+        - heading "右栏" [level=4] [ref=e155]
+        - list [ref=e156]:
+          - listitem [ref=e157]:
+            - strong [ref=e158]: Graph View
+            - text: ：提交与分支的可视化图谱，命令执行后自动更新。
+          - listitem [ref=e159]:
+            - strong [ref=e160]: 目标浮层
+            - text: （课程模式）：显示当前步骤目标，可拖动与隐藏。
+      - generic [ref=e161]:
+        - heading "终端技巧" [level=4] [ref=e162]
+        - list [ref=e163]:
+          - listitem [ref=e164]:
+            - strong [ref=e165]: Tab
+            - text: ：命令补全
+          - listitem [ref=e166]:
+            - strong [ref=e167]: ↑ / ↓
+            - text: ：浏览命令历史
+      - generic [ref=e168]:
+        - heading "内置命令（课程模式）" [level=4] [ref=e169]
+        - list [ref=e170]:
+          - listitem [ref=e171]:
+            - code [ref=e172]: hint
+            - text: — 显示当前步骤提示
+          - listitem [ref=e173]:
+            - code [ref=e174]: levels
+            - text: — 列出全部关卡
+          - listitem [ref=e175]:
+            - code [ref=e176]: reset
+            - text: — 重置当前关卡仓库
+    - button "知道了" [ref=e178] [cursor=pointer]

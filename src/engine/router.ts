@@ -1,4 +1,5 @@
 import { RealEngine } from "./real/realEngine";
+import type { RepoSeed } from "./seed";
 import { SimEngine } from "./sim/simEngine";
 import type { RepoSnapshot } from "./snapshot";
 import type { EngineMode, GitEngine } from "./types";
@@ -20,8 +21,8 @@ export class EngineRouter implements GitEngine {
     return this.active().execute(command);
   }
 
-  async reset(): Promise<RepoSnapshot> {
-    return this.active().reset();
+  async reset(seed?: RepoSeed): Promise<RepoSnapshot> {
+    return this.active().reset(seed);
   }
 
   getSnapshot(): RepoSnapshot {

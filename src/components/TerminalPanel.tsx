@@ -3,11 +3,14 @@ import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 
+import { highlightLine, highlightPrompt } from "../terminal/highlight";
+
 interface TerminalPanelProps {
   history: string[];
   onCommand: (command: string) => void;
   getCompletions: (input: string) => string[];
   darkMode?: boolean;
+  inputEnabled?: boolean;
 }
 
 const lightTerminalTheme = {
@@ -17,15 +20,23 @@ const lightTerminalTheme = {
 };
 
 const darkTerminalTheme = {
-  background: "#141c28",
-  foreground: "#e2e8f0",
+  background: "#111111",
+  foreground: "#e5e5e5",
   cursor: "#c8e600",
 };
 
-const PROMPT = "$ ";
+const PROMPT_VISIBLE_LEN = 2;
 
-export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = false }: TerminalPanelProps) => {
+export const TerminalPanel = ({
+  history,
+  onCommand,
+  getCompletions,
+  darkMode = false,
+  inputEnabled = true,
+}: TerminalPanelProps) => {
   const hostRef = useRef<HTMLDivElement | null>(null);
+  const historyRef = useRef(history);
+  historyRef.current = history;
   const termRef = useRef<Terminal | null>(null);
   const onCommandRef = useRef(onCommand);
   const getCompletionsRef = useRef(getCompletions);
@@ -37,6 +48,8 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
   const safeFitRef = useRef<() => void>(() => undefined);
   const promptVisibleRef = useRef(false);
   const awaitingResultRef = useRef(false);
+  const inputEnabledRef = useRef(inputEnabled);
+  inputEnabledRef.current = inputEnabled;
 
   useEffect(() => {
     onCommandRef.current = onCommand;
@@ -58,11 +71,8 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
     if (!term) return;
     const buffer = lineBufferRef.current;
     const cursorPos = cursorPosRef.current;
-    term.write(`\r\x1b[2K${PROMPT}${buffer}`);
-    const moveLeft = buffer.length - cursorPos;
-    if (moveLeft > 0) {
-      term.write(`\x1b[${moveLeft}D`);
-    }
+    term.write(`\r\x1b[2K${highlightPrompt(buffer)}`);
+    term.write(`\x1b[${PROMPT_VISIBLE_LEN + cursorPos + 1}G`);
     term.scrollToBottom();
     focusTerminal();
   };
@@ -78,7 +88,7 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
     if (!term || lines.length === 0) return;
     if (promptVisibleRef.current) term.write("\r\x1b[2K");
     term.write("\r\n");
-    lines.forEach((line) => term.writeln(line));
+    lines.forEach((line) => term.writeln(highlightLine(line)));
     promptVisibleRef.current = true;
     awaitingResultRef.current = false;
     renderPromptLine();
@@ -107,6 +117,12 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
     };
     safeFitRef.current = safeFit;
     requestAnimationFrame(safeFit);
+    const initialHistory = historyRef.current;
+    if (initialHistory.length > 0) {
+      initialHistory.forEach((line) => term.writeln(highlightLine(line)));
+      printedRef.current = initialHistory.length;
+      term.write("\r\n");
+    }
     promptVisibleRef.current = true;
     renderPromptLine();
     focusTerminal();
@@ -115,7 +131,11 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
     window.addEventListener("resize", onResize);
     hostRef.current?.addEventListener("mousedown", focusTerminal);
 
+    const resizeObserver = new ResizeObserver(() => safeFit());
+    if (hostRef.current) resizeObserver.observe(hostRef.current);
+
     term.onData((data) => {
+      if (!inputEnabledRef.current) return;
       const char = data.charCodeAt(0);
       const buffer = lineBufferRef.current;
       const pos = cursorPosRef.current;
@@ -149,7 +169,7 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
           setInputBuffer(suggestions[0], suggestions[0].length);
         } else if (suggestions.length > 1) {
           term.write("\r\x1b[2K");
-          term.writeln(suggestions.join("   "));
+          term.writeln(suggestions.map((item) => highlightLine(`$ ${item}`)).join("   "));
           promptVisibleRef.current = true;
           renderPromptLine();
         }
@@ -192,6 +212,7 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
     });
 
     return () => {
+      resizeObserver.disconnect();
       window.removeEventListener("resize", onResize);
       hostRef.current?.removeEventListener("mousedown", focusTerminal);
       term.dispose();
@@ -206,7 +227,7 @@ export const TerminalPanel = ({ history, onCommand, getCompletions, darkMode = f
 
   useEffect(() => {
     safeFitRef.current();
-  }, [history.length]);
+  }, [history.length, inputEnabled]);
 
   useEffect(() => {
     if (!termRef.current) return;
