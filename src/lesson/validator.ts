@@ -138,6 +138,21 @@ export const validators: Record<string, StepValidator> = {
   "w13-commit": (snapshot, command) =>
     snapshot.commits.length >= 1 && cmdIs("git commit")(command),
   "w13-log": (_snapshot, command) => cmdIs("git log")(command),
+
+  "cp-init": (snapshot, command) => snapshot.initialized && cmdIs("git init")(command),
+  "cp-add-any": (snapshot, command) => snapshot.index.length > 0 && cmdIs("git add")(command),
+  "cp-add-readme": (snapshot, command) =>
+    snapshot.index.includes("README.md") && cmdIs("git add")(command),
+  "cp-commit-any": (snapshot, command) => snapshot.commits.length >= 1 && cmdIs("git commit")(command),
+  "cp-diff-staged": (_snapshot, command) => cmdIncludes("git diff", "--staged")(command),
+  "cp-remote-add-origin": (snapshot, command) =>
+    hasRemote(snapshot, "origin") && cmdIs("git remote add")(command),
+  "cp-remote-v": (snapshot, command) =>
+    hasRemote(snapshot, "origin") && cmdAny(["git remote -v", "git remote"])(command),
+  "cp-branch-feature": (snapshot, command) =>
+    hasBranch(snapshot, "feature") && cmdIncludes("git branch", "feature")(command),
+  "cp-restore-staged-readme": (snapshot, command) =>
+    cmdIncludes("git restore", "--staged")(command) && !snapshot.index.includes("README.md"),
 };
 
 export function validateStep(validatorId: string, snapshot: RepoSnapshot, command: string): boolean {

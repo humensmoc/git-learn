@@ -98,7 +98,7 @@ export interface CommandToken {
 }
 
 export function tokenizeGitCommand(command: string, _shortcutId?: string): CommandToken[] {
-  const raw = command.trim();
+  const raw = command;
   const parts = raw.match(/("[^"]*"|'[^']*'|\S+|\s+)/g) ?? [raw];
   const tokens: CommandToken[] = [];
   let seenGit = false;

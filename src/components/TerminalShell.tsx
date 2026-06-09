@@ -25,7 +25,7 @@ export const TerminalShell = ({
       onCommand={(cmd) => onCommand(cmd)}
       getCompletions={getCompletions}
       darkMode={darkMode}
-      inputEnabled={!shortcutOpen}
+      inputEnabled
     />
     <ShortcutDock open={shortcutOpen} snapshot={snapshot} onCommand={onCommand} />
   </div>

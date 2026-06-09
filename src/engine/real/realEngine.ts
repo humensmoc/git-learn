@@ -55,6 +55,14 @@ export class RealEngine implements GitEngine {
         case "add": {
           const file = args[0];
           if (!file) return this.ok(["usage: git add <file>"], []);
+          if (file === "." || file === "-A" || file === "--all") {
+            const filepaths = await this.listRepoFiles();
+            if (filepaths.length === 0) return this.ok(["nothing to add"], []);
+            for (const filepath of filepaths) {
+              await git.add({ fs, dir, filepath });
+            }
+            break;
+          }
           await this.ensureFile(file);
           await git.add({ fs, dir, filepath: file });
           break;
@@ -137,6 +145,23 @@ export class RealEngine implements GitEngine {
       await pfs.mkdir(current).catch(() => undefined);
     }
     await pfs.writeFile(absolute, `demo ${Date.now()}`);
+  }
+
+  private async listRepoFiles(current = dir): Promise<string[]> {
+    const entries = (await pfs.readdir(current).catch(() => [])) as string[];
+    const files: string[] = [];
+    for (const entry of entries) {
+      if (current === dir && entry === ".git") continue;
+      const absolute = `${current}/${entry}`;
+      const nested = await pfs.readdir(absolute).catch(() => null);
+      if (nested) {
+        files.push(...(await this.listRepoFiles(absolute)));
+        continue;
+      }
+      const rel = absolute.slice(`${dir}/`.length);
+      files.push(rel);
+    }
+    return files;
   }
 
   private async handleWorkspace(op: string, path: string): Promise<EngineResult> {

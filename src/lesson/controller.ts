@@ -18,7 +18,11 @@ export interface LessonControllerState {
   currentWorld: (typeof worlds)[number];
   activeStepIndex: number;
   currentStep: (typeof worlds)[number]["steps"][number];
+  checkpointStatus: Array<{ id: string; title: string; done: boolean }>;
+  awaitingStepConfirm: boolean;
+  worldCompleted: boolean;
   selectWorld: (index: number) => Promise<void>;
+  confirmCurrentStep: () => void;
   showHint: () => void;
   handleMetaCommand: (cmd: "levels" | "hint") => void;
   resetLesson: () => Promise<void>;
@@ -35,10 +39,19 @@ export function useLessonController(session: GitSession): LessonControllerState 
   const [feedback, setFeedback] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [worldLoaded, setWorldLoaded] = useState(false);
+  const [completedCheckpointIds, setCompletedCheckpointIds] = useState<string[]>([]);
+  const [awaitingStepConfirm, setAwaitingStepConfirm] = useState(false);
+  const [worldCompleted, setWorldCompleted] = useState(false);
 
   const currentWorld = worlds[worldIndex];
   const activeStepIndex = Math.min(stepIndex, currentWorld.steps.length - 1);
   const currentStep = currentWorld.steps[activeStepIndex];
+  const checkpointStatus =
+    currentStep.checkpoints?.map((cp) => ({
+      id: cp.id,
+      title: cp.title,
+      done: completedCheckpointIds.includes(cp.id),
+    })) ?? [];
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -73,6 +86,9 @@ export function useLessonController(session: GitSession): LessonControllerState 
         intro.push(`安全提示：${world.steps[0].riskNote}`);
       }
       setFeedback(intro);
+      setCompletedCheckpointIds([]);
+      setAwaitingStepConfirm(false);
+      setWorldCompleted(false);
       if (resetStep) setStepIndex(0);
     },
     [session],
@@ -88,17 +104,25 @@ export function useLessonController(session: GitSession): LessonControllerState 
     async (index: number) => {
       const next = Math.min(worlds.length - 1, Math.max(0, index));
       if (next === worldIndex) return;
+      if (next > worldIndex && !worldCompleted) {
+        setFeedback(["当前关卡还未完成。请先完成当前关卡，再进入下一关。"]);
+        return;
+      }
       setWorldIndex(next);
       await applyWorld(next, true);
     },
-    [applyWorld, worldIndex],
+    [applyWorld, worldCompleted, worldIndex],
   );
 
   const showHint = useCallback(() => {
     const lines = [`提示：${currentStep.commandHint}`];
+    if (currentStep.checkpoints?.length) {
+      const pending = currentStep.checkpoints.find((cp) => !completedCheckpointIds.includes(cp.id));
+      if (pending) lines.unshift(`当前检查点：${pending.title}`);
+    }
     if (currentStep.riskNote) lines.push(`安全提示：${currentStep.riskNote}`);
     setFeedback(lines);
-  }, [currentStep]);
+  }, [completedCheckpointIds, currentStep]);
 
   const handleMetaCommand = useCallback(
     (cmd: "levels" | "hint") => {
@@ -114,22 +138,88 @@ export function useLessonController(session: GitSession): LessonControllerState 
   const resetLesson = useCallback(async () => {
     await session.resetRepo(worldSeed(currentWorld));
     setStepIndex(0);
+    setCompletedCheckpointIds([]);
+    setAwaitingStepConfirm(false);
+    setWorldCompleted(false);
     setFeedback(["仓库已重置，请从当前步骤重新输入命令。"]);
   }, [currentWorld, session]);
 
+  const confirmCurrentStep = useCallback(() => {
+    if (!awaitingStepConfirm) return;
+    setAwaitingStepConfirm(false);
+    setCompletedCheckpointIds([]);
+    if (activeStepIndex >= currentWorld.steps.length - 1) {
+      setWorldCompleted(true);
+      setFeedback(["当前关卡已完成。你现在可以进入下一关。"]);
+      return;
+    }
+    const nextIndex = activeStepIndex + 1;
+    setStepIndex(nextIndex);
+    const nextStep = currentWorld.steps[nextIndex];
+    if (nextStep?.riskNote) {
+      setFeedback(["已确认完成本步骤，进入下一步。", `安全提示：${nextStep.riskNote}`]);
+    } else {
+      setFeedback(["已确认完成本步骤，进入下一步。"]);
+    }
+  }, [activeStepIndex, awaitingStepConfirm, currentWorld.steps]);
+
   const onGitResult = useCallback(
     (snapshot: RepoSnapshot, command: string, hadOutput: boolean): StepResult => {
+      if (awaitingStepConfirm) {
+        if (hadOutput) {
+          setFeedback(["本步骤检查点已全部完成，请点击“完成本步骤”再进入下一步。"]);
+        }
+        return "stay";
+      }
+
+      if (currentStep.checkpoints?.length) {
+        const pendingCheckpoint = currentStep.checkpoints.find((cp) => !completedCheckpointIds.includes(cp.id));
+        if (!pendingCheckpoint) {
+          setAwaitingStepConfirm(true);
+          setFeedback(["本步骤检查点已全部完成，请点击“完成本步骤”进入下一步。"]);
+          return "stay";
+        }
+
+        if (validateStep(pendingCheckpoint.validatorId, snapshot, command)) {
+          const nextCompleted = [...completedCheckpointIds, pendingCheckpoint.id];
+          setCompletedCheckpointIds(nextCompleted);
+          const nextCheckpoint = currentStep.checkpoints.find((cp) => !nextCompleted.includes(cp.id));
+          if (nextCheckpoint) {
+            setFeedback([`检查点已完成：${pendingCheckpoint.title}`, `下一检查点：${nextCheckpoint.title}`]);
+          } else {
+            setAwaitingStepConfirm(true);
+            if (activeStepIndex >= currentWorld.steps.length - 1) {
+              setFeedback(["本关所有命令检查点已完成，请点击“完成本步骤”后进入下一关。"]);
+            } else {
+              setFeedback(["本步骤所有检查点已完成，请点击“完成本步骤”进入下一步。"]);
+            }
+          }
+          return "stay";
+        }
+
+        if (hadOutput) {
+          const lines = [`当前检查点未通过：${pendingCheckpoint.title}`];
+          if (currentStep.riskNote) lines.push(`安全提示：${currentStep.riskNote}`);
+          setFeedback(lines);
+        }
+        return "stay";
+      }
+
       if (validateStep(currentStep.validatorId, snapshot, command)) {
         const nextIndex = Math.min(activeStepIndex + 1, currentWorld.steps.length - 1);
+        if (nextIndex === currentWorld.steps.length - 1 && nextIndex === activeStepIndex) {
+          setWorldCompleted(true);
+          setFeedback(["当前关卡已完成。你现在可以进入下一关。"]);
+          return "complete";
+        }
         setStepIndex(nextIndex);
+        setCompletedCheckpointIds([]);
+        setAwaitingStepConfirm(false);
         const nextStep = currentWorld.steps[nextIndex];
         if (nextStep?.riskNote && nextIndex !== activeStepIndex) {
           setFeedback(["当前步骤已完成，继续下一步。", `安全提示：${nextStep.riskNote}`]);
         } else {
           setFeedback(["当前步骤已完成，继续下一步。"]);
-        }
-        if (nextIndex === currentWorld.steps.length - 1 && nextIndex === activeStepIndex) {
-          return "complete";
         }
         return "advance";
       }
@@ -140,7 +230,7 @@ export function useLessonController(session: GitSession): LessonControllerState 
       }
       return "stay";
     },
-    [activeStepIndex, currentStep, currentWorld],
+    [activeStepIndex, awaitingStepConfirm, completedCheckpointIds, currentStep, currentWorld],
   );
 
   return {
@@ -150,7 +240,11 @@ export function useLessonController(session: GitSession): LessonControllerState 
     currentWorld,
     activeStepIndex,
     currentStep,
+    checkpointStatus,
+    awaitingStepConfirm,
+    worldCompleted,
     selectWorld,
+    confirmCurrentStep,
     showHint,
     handleMetaCommand,
     resetLesson,

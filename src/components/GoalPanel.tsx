@@ -13,8 +13,12 @@ export interface LessonGoalPanelProps {
   totalWorlds: number;
   stepIndex: number;
   step: LessonStep;
+  checkpointStatus: Array<{ id: string; title: string; done: boolean }>;
+  awaitingStepConfirm: boolean;
+  worldCompleted: boolean;
   feedback: string[];
   onSelectWorld: (index: number) => void;
+  onConfirmStep: () => void;
   onHint: () => void;
 }
 
@@ -24,8 +28,12 @@ export const LessonGoalPanel = ({
   totalWorlds,
   stepIndex,
   step,
+  checkpointStatus,
+  awaitingStepConfirm,
+  worldCompleted,
   feedback,
   onSelectWorld,
+  onConfirmStep,
   onHint,
 }: LessonGoalPanelProps) => (
   <FloatingPanel
@@ -53,6 +61,21 @@ export const LessonGoalPanel = ({
     </div>
     <p>{step.instruction}</p>
     <code>{step.commandHint}</code>
+    {checkpointStatus.length > 0 ? (
+      <div className="goal-checkpoints">
+        {checkpointStatus.map((item) => (
+          <div key={item.id} className={`goal-checkpoint-item${item.done ? " is-done" : ""}`}>
+            <span className="goal-checkpoint-mark">{item.done ? "✓" : "○"}</span>
+            <span>{item.title}</span>
+          </div>
+        ))}
+      </div>
+    ) : null}
+    {awaitingStepConfirm ? (
+      <button type="button" className="goal-confirm-btn" onClick={onConfirmStep}>
+        完成本步骤
+      </button>
+    ) : null}
     {step.riskNote ? <p className="goal-risk-note">{step.riskNote}</p> : null}
     {feedback.length > 0 ? (
       <div className="goal-feedback" aria-live="polite">
@@ -62,6 +85,7 @@ export const LessonGoalPanel = ({
       </div>
     ) : null}
     <small>也可在终端输入 hint 查看提示</small>
+    {!worldCompleted ? <small>当前关卡未完成，暂时不能进入下一关。</small> : null}
     <div className="goal-world-switch">
       <button type="button" onClick={() => onSelectWorld(Math.max(0, worldIndex - 1))}>
         上一关

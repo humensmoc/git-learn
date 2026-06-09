@@ -2,12 +2,19 @@ import type { SeedId } from "../engine/seed";
 
 export type RiskLevel = "basic" | "advanced" | "danger";
 
+export interface LessonCheckpoint {
+  id: string;
+  title: string;
+  validatorId: string;
+}
+
 export interface LessonStep {
   id: string;
   validatorId: string;
   title: string;
   instruction: string;
   commandHint: string;
+  checkpoints?: LessonCheckpoint[];
   riskLevel?: RiskLevel;
   riskNote?: string;
 }

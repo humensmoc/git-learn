@@ -47,6 +47,7 @@ export const TerminalPanel = ({
   const printedRef = useRef(0);
   const safeFitRef = useRef<() => void>(() => undefined);
   const promptVisibleRef = useRef(false);
+  const promptRowsRef = useRef(1);
   const awaitingResultRef = useRef(false);
   const inputEnabledRef = useRef(inputEnabled);
   inputEnabledRef.current = inputEnabled;
@@ -66,13 +67,36 @@ export const TerminalPanel = ({
     }
   };
 
+  const calcPromptRows = (visibleChars: number) => {
+    const term = termRef.current;
+    const cols = Math.max(term?.cols ?? 80, 1);
+    return Math.max(1, Math.floor((Math.max(visibleChars, 1) - 1) / cols) + 1);
+  };
+
+  const clearPromptRender = () => {
+    const term = termRef.current;
+    if (!term) return;
+    const rows = Math.max(promptRowsRef.current, 1);
+    term.write("\r\x1b[2K");
+    for (let i = 1; i < rows; i += 1) {
+      term.write("\x1b[1A\r\x1b[2K");
+    }
+  };
+
   const renderPromptLine = () => {
     const term = termRef.current;
     if (!term) return;
     const buffer = lineBufferRef.current;
     const cursorPos = cursorPosRef.current;
-    term.write(`\r\x1b[2K${highlightPrompt(buffer)}`);
-    term.write(`\x1b[${PROMPT_VISIBLE_LEN + cursorPos + 1}G`);
+    clearPromptRender();
+    term.write(highlightPrompt(buffer));
+    const visibleChars = PROMPT_VISIBLE_LEN + buffer.length;
+    promptRowsRef.current = calcPromptRows(visibleChars);
+    const cursorVisiblePos = PROMPT_VISIBLE_LEN + cursorPos;
+    const backward = visibleChars - cursorVisiblePos;
+    if (backward > 0) {
+      term.write(`\x1b[${backward}D`);
+    }
     term.scrollToBottom();
     focusTerminal();
   };
@@ -86,9 +110,10 @@ export const TerminalPanel = ({
   const printHistoryLines = (lines: string[]) => {
     const term = termRef.current;
     if (!term || lines.length === 0) return;
-    if (promptVisibleRef.current) term.write("\r\x1b[2K");
+    if (promptVisibleRef.current) clearPromptRender();
     term.write("\r\n");
     lines.forEach((line) => term.writeln(highlightLine(line)));
+    promptRowsRef.current = 1;
     promptVisibleRef.current = true;
     awaitingResultRef.current = false;
     renderPromptLine();
@@ -144,6 +169,7 @@ export const TerminalPanel = ({
       if (data === "\r") {
         const command = lineBufferRef.current.trim();
         term.write("\r\n");
+        promptRowsRef.current = 1;
         if (command.length > 0) {
           cmdHistoryRef.current.unshift(command);
           cmdHistoryCursorRef.current = -1;
@@ -227,6 +253,8 @@ export const TerminalPanel = ({
 
   useEffect(() => {
     safeFitRef.current();
+    promptRowsRef.current = 1;
+    renderPromptLine();
   }, [history.length, inputEnabled]);
 
   useEffect(() => {

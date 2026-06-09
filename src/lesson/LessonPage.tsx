@@ -53,8 +53,12 @@ export const LessonPage = ({ session, darkMode, onPlayTick }: LessonPageProps) =
       totalWorlds={worlds.length}
       stepIndex={lesson.activeStepIndex}
       step={lesson.currentStep}
+      checkpointStatus={lesson.checkpointStatus}
+      awaitingStepConfirm={lesson.awaitingStepConfirm}
+      worldCompleted={lesson.worldCompleted}
       feedback={lesson.feedback}
       onSelectWorld={(index) => void lesson.selectWorld(index)}
+      onConfirmStep={lesson.confirmCurrentStep}
       onHint={lesson.showHint}
     />
   );

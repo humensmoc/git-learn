@@ -630,6 +630,44 @@ button.mode-active {
   font-size: 12px;
 }
 
+.goal-checkpoints {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 8px;
+  border: 1px dashed color-mix(in srgb, var(--goal-text) 25%, transparent);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.goal-checkpoint-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--goal-text);
+}
+
+.goal-checkpoint-item.is-done {
+  color: color-mix(in srgb, var(--goal-text) 75%, #53d38a);
+}
+
+.goal-checkpoint-mark {
+  width: 14px;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.goal-confirm-btn {
+  align-self: flex-start;
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
 .goal-world-switch {
   display: flex;
   align-items: center;
@@ -672,6 +710,7 @@ button.mode-active {
 
 .shortcut-dock {
   flex-shrink: 0;
+  position: relative;
   max-height: 0;
   overflow: hidden;
   opacity: 0;
@@ -686,7 +725,8 @@ button.mode-active {
 }
 
 .shortcut-dock.is-open {
-  max-height: 160px;
+  max-height: 240px;
+  overflow: hidden;
   opacity: 1;
   background: var(--terminal-bg);
 }
@@ -705,6 +745,10 @@ button.mode-active {
   gap: 6px;
   padding: 8px 10px 10px;
   background: var(--terminal-bg);
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: auto;
+  align-content: flex-start;
 }
 
 .shortcut-pill {
@@ -722,7 +766,7 @@ button.mode-active {
   align-items: center;
   gap: 6px;
   padding-right: 6px;
-  overflow: hidden;
+  overflow: visible;
   flex-wrap: nowrap;
 }
 
@@ -746,19 +790,22 @@ button.mode-active {
 }
 
 .pill-options {
-  display: flex;
+  display: none;
   align-items: center;
   gap: 6px;
   overflow: hidden;
-  max-width: 0;
+  max-width: 100%;
   /* transition: max-width 280ms ease; */
   transition: none;
+  flex-wrap: nowrap;
 }
 
 .shortcut-pill.is-expanded .pill-options {
-  max-width: 560px;
-  overflow: hidden;
+  display: flex;
+  max-width: 100%;
+  overflow: visible;
   padding-left: 6px;
+  flex-wrap: wrap;
 }
 
 .pill-sub {
@@ -784,9 +831,61 @@ button.mode-active {
 }
 
 .shortcut-pill.is-expanded .pill-sub {
-  max-width: 140px;
+  max-width: 200px;
   opacity: 1;
   padding: 4px 8px;
+}
+
+.shortcut-tooltip {
+  position: absolute;
+  width: min(280px, calc(100vw - 40px));
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--git-flag) 40%, var(--border));
+  background: color-mix(in srgb, var(--terminal-bg) 85%, black);
+  color: #e8edf5;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.shortcut-tooltip-title {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--git-flag);
+}
+
+.shortcut-tooltip p {
+  margin: 0 0 6px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: #c6d0de;
+}
+
+.shortcut-tooltip p:last-child {
+  margin-bottom: 0;
+}
+
+.shortcut-tooltip strong {
+  font-weight: 600;
+  color: #f0f4fb;
+  margin-right: 4px;
+}
+
+.shortcut-tooltip code {
+  display: inline-block;
+  margin-right: 4px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #f7fbff;
+}
+
+.shortcut-tooltip span {
+  color: #c6d0de;
 }
 
 .git-token--keyword { color: var(--git-keyword); }
@@ -809,10 +908,13 @@ button.mode-active {
 .git-token--stash, .shortcut-pill--stash .pill-main { color: var(--git-stash); }
 .shortcut-pill--stash { border-color: color-mix(in srgb, var(--git-stash) 45%, transparent); }
 .git-token--log, .git-token--diff, .shortcut-pill--log .pill-main { color: var(--git-log); }
-.shortcut-pill--log { border-color: color-mix(in srgb, var(--git-log) 45%, transparent); }
+.shortcut-pill--log, .shortcut-pill--diff { border-color: color-mix(in srgb, var(--git-log) 45%, transparent); }
+.shortcut-pill--diff .pill-main { color: var(--git-log); }
 .git-token--push, .git-token--pull, .git-token--fetch, .git-token--remote, .git-token--clone,
-.shortcut-pill--push .pill-main, .shortcut-pill--pull .pill-main, .shortcut-pill--remote .pill-main { color: var(--git-remote); }
-.shortcut-pill--push, .shortcut-pill--pull, .shortcut-pill--remote { border-color: color-mix(in srgb, var(--git-remote) 45%, transparent); }
+.shortcut-pill--push .pill-main, .shortcut-pill--pull .pill-main, .shortcut-pill--remote .pill-main,
+.shortcut-pill--fetch .pill-main, .shortcut-pill--clone .pill-main { color: var(--git-remote); }
+.shortcut-pill--push, .shortcut-pill--pull, .shortcut-pill--remote,
+.shortcut-pill--fetch, .shortcut-pill--clone { border-color: color-mix(in srgb, var(--git-remote) 45%, transparent); }
 .git-token--reset, .git-token--restore, .git-token--revert, .git-token--rm,
 .shortcut-pill--reset .pill-main, .shortcut-pill--restore .pill-main { color: var(--git-reset); }
 .shortcut-pill--reset, .shortcut-pill--restore { border-color: color-mix(in srgb, var(--git-reset) 45%, transparent); }

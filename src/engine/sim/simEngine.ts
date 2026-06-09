@@ -126,6 +126,9 @@ export class SimEngine implements GitEngine {
       case "rm":
         return this.handleRm(args);
       default:
+        if (sub === "rebas") {
+          return this.ok([`git: '${sub}' 不是可用命令`, "提示: 你是不是想输入 git rebase ？"], []);
+        }
         return this.ok([`git: '${sub}' 不是可用命令`], []);
     }
   }
@@ -603,9 +606,15 @@ export class SimEngine implements GitEngine {
     const err = this.ensureInitialized();
     if (err) return this.ok([err], []);
 
-    if (args[0] === "add" && args[1] && args[2]) {
-      this.state.remotes[args[1]] = { url: args[2], branches: { main: "" } };
-      return this.ok([`已添加远端 ${args[1]} -> ${args[2]}`], []);
+    if (args[0] === "add" && args[1]) {
+      const looksLikeUrl = args[1].includes("://") || args[1].startsWith("git@");
+      const remoteName = looksLikeUrl ? "origin" : args[1];
+      const remoteUrl = looksLikeUrl ? args[1] : args[2];
+      if (!remoteUrl) {
+        return this.ok(["提示: 建议使用 git remote add origin <url>"], []);
+      }
+      this.state.remotes[remoteName] = { url: remoteUrl, branches: { main: "" } };
+      return this.ok([`已添加远端 ${remoteName} -> ${remoteUrl}`], []);
     }
 
     if (args[0] === "set-url" && args[1] && args[2]) {
@@ -656,6 +665,9 @@ export class SimEngine implements GitEngine {
   private handlePull(args: string[]): EngineResult {
     const err = this.ensureInitialized();
     if (err) return this.ok([err], []);
+    if (args[0] === "rebase") {
+      return this.ok(["提示: 你输入的是 git pull rebase", "正确写法: git pull --rebase"], []);
+    }
     const remoteName = args[0] ?? "origin";
     if (!this.state.remotes[remoteName]) return this.ok([`fatal: remote ${remoteName} 不存在`], []);
     if (args.includes("--rebase")) {
